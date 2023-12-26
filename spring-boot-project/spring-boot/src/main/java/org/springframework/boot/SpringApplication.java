@@ -258,20 +258,28 @@ public class SpringApplication {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+		//资源加载器，为null
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
+		//保存主要源，一般就是main方法所在的类或引导应用程序的类
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		//从classpath中推断应用的应用程序环境（servlet还是reactive）
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		//从META-INF/spring.factories加载BootstrapRegistryInitializer类实例
 		this.bootstrapRegistryInitializers = new ArrayList<>(
 				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+		//从META-INF/spring.factories加载设置ApplicationContextInitializer类实例
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		//从META-INF/spring.factories加载设置ApplicationListener监听器类实例
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		//从堆栈中推断出main应用程序类
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
 	private Class<?> deduceMainApplicationClass() {
 		try {
 			StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
+			//从本方法开始往上爬，哪一层调用栈上有main方法，方法对应的类就是主应用类
 			for (StackTraceElement stackTraceElement : stackTrace) {
 				if ("main".equals(stackTraceElement.getMethodName())) {
 					return Class.forName(stackTraceElement.getClassName());
